@@ -10,6 +10,11 @@ const api = axios.create({
   }
 });
 
+const token: string | null = localStorage.getItem('token');
+if (token) {
+  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+}
+
 // "async" is optional;
 // more info on params: https://v2.quasar.dev/quasar-cli-vite/boot-files
 export default defineBoot(async ({ app }) => {

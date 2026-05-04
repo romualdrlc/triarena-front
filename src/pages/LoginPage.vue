@@ -68,7 +68,7 @@ const form = reactive({
 })
 
 onMounted(() => {
-  if (auth.isLoggedIn) {
+  if (auth.isAuthenticated) {
     router.push('/')
   }
 })

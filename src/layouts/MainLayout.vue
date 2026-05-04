@@ -2,16 +2,18 @@
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
       <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
-
         <q-toolbar-title> TriArena </q-toolbar-title>
 
-        <div v-if="auth.isLoggedIn" class="row items-center q-gutter-sm">
+        <div v-if="auth.token" class="row items-center q-gutter-sm">
           <q-icon name="account_circle" size="sm" />
-          <span>{{ auth.user?.name }}</span>
+          <span>{{ auth.user?.name || 'Utilisateur' }}</span>
           <q-btn flat round dense icon="logout" @click="confirmLogout" />
         </div>
-        <q-btn v-else flat label="Connexion" to="/login" />
+
+        <div v-else class="q-gutter-sm">
+          <q-btn flat label="Connexion" to="/login" />
+          <q-btn outline label="S'inscrire" to="/register" />
+        </div>
 
       </q-toolbar>
     </q-header>
@@ -30,7 +32,7 @@ const auth = useAuthStore()
 const router = useRouter()
 
 const confirmLogout = async () => {
-  await auth.logout();
+  auth.logout();
   await router.push('/login');
 }
 </script>
