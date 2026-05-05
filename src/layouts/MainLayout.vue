@@ -6,7 +6,7 @@
 
         <div v-if="auth.token" class="row items-center q-gutter-sm">
           <q-icon name="account_circle" size="sm" />
-          <span>{{ auth.user?.name || 'Utilisateur' }}</span>
+          <span>{{ auth.player?.pseudo || 'Utilisateur' }}</span>
           <q-btn flat round dense icon="logout" @click="confirmLogout" />
         </div>
 
@@ -17,7 +17,7 @@
 
       </q-toolbar>
     </q-header>
-
+Ò
     <q-page-container>
       <router-view />
     </q-page-container>

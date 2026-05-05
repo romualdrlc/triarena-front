@@ -76,7 +76,7 @@ onMounted(() => {
 const onSubmit = async () => {
   loading.value = true
   try {
-    const user = await auth.login({
+    await auth.login({
       email: form.email,
       password: form.password
     })

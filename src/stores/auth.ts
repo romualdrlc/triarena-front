@@ -1,15 +1,16 @@
 import { defineStore } from 'pinia';
 import { api } from 'boot/axios';
 import axios from "axios";
+import Player from "src/domain/Player";
 
-export interface Player {
+export interface PlayerInterface {
   pseudo: string;
   email: string;
 }
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    player: null as Player | null,
+    player: JSON.parse(localStorage.getItem('player') || 'null') as PlayerInterface | null,
     token: localStorage.getItem('token') || null,
   }),
   getters: {
@@ -19,7 +20,9 @@ export const useAuthStore = defineStore('auth', {
     async register(pseudo: string, email: string, password: string): Promise<Player> {
       try {
         const result = await api.post('/register', { pseudo, email, password });
-        return result.data.user as Player;
+        const newPlayer = new Player(result.data.user.pseudo, result.data.user.email);
+        this.player = { pseudo: newPlayer.getPseudo(), email: newPlayer.getEmail() };
+        return newPlayer;
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
           throw error.response?.data?.error || 'Erreur lors de l\'inscription';
@@ -34,8 +37,13 @@ export const useAuthStore = defineStore('auth', {
         if (!(this.token)) {
           return false;
         }
-        localStorage.setItem('token', this.token);
         api.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+        this.player = {
+          pseudo: response.data.user.name,
+          email: response.data.user.email
+        };
+        localStorage.setItem('token', this.token);
+        localStorage.setItem('player', JSON.stringify(this.player));
         return true;
       } catch (error) {
         throw 'Identifiants incorrects';
@@ -45,6 +53,7 @@ export const useAuthStore = defineStore('auth', {
       this.token = null;
       this.player = null;
       localStorage.removeItem('token');
+      localStorage.removeItem('player');
       delete api.defaults.headers.common['Authorization'];
     }
   },
