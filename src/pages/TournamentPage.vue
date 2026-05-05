@@ -1,12 +1,11 @@
 <template>
-  <q-page class="q-pa-md">
-    <div class="text-h4">Tournois disponibles</div>
-    <p>Bientôt ici, la liste des tournois de Palet, Pétanque et Cornhole !</p>
-  </q-page>
+  <div class="tournament-page">
+    <TournamentList />
+  </div>
 </template>
 
 <script setup lang="ts">
-
+import TournamentList from "components/Tournament/TournamentList.vue";
 </script>
 
 <style scoped>

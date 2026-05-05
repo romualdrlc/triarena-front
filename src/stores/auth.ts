@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { api } from 'boot/axios';
 import axios from "axios";
-import Player from "src/domain/Player";
+import Player from "src/domain/entity/Player";
 
 export interface PlayerInterface {
   pseudo: string;
