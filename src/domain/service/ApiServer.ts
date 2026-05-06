@@ -5,6 +5,10 @@ import {TournamentCardRaw, TournamentRaw} from "src/domain/interface/InterfaceTy
 
 export default class ApiServer {
 
+  public getMe(): Promise<{pseudo: string; email: string;} | null> {
+    return this.get<{pseudo: string; email: string;} | null>('/me');
+  }
+
   public async getTournamentList(): Promise<{name: string; slug: string, status: string;}[]> {
     const result = await this.get<TournamentCardRaw[]>('/tournaments');
     const tournamentList: {name: string; slug: string, status: string;}[] = [];

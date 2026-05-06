@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia';
-import { api } from 'boot/axios';
+import {defineStore} from 'pinia';
+import {api} from 'boot/axios';
 import axios from "axios";
 import Player from "src/domain/entity/Player";
 
@@ -20,9 +20,7 @@ export const useAuthStore = defineStore('auth', {
     async register(pseudo: string, email: string, password: string): Promise<Player> {
       try {
         const result = await api.post('/register', { pseudo, email, password });
-        const newPlayer = new Player(result.data.user.pseudo, result.data.user.email);
-        this.player = { pseudo: newPlayer.getPseudo(), email: newPlayer.getEmail() };
-        return newPlayer;
+        return new Player(result.data.user.pseudo, result.data.user.email);
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
           throw error.response?.data?.error || 'Erreur lors de l\'inscription';
@@ -33,13 +31,14 @@ export const useAuthStore = defineStore('auth', {
     async login(credentials: { email: string, password: string }) {
       try {
         const response = await api.post('/login', credentials);
+
         this.token = response.data.token;
         if (!(this.token)) {
           return false;
         }
-        api.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+        // Adapte selon la structure de ta réponse Symfony (user.name ou user.pseudo ?)
         this.player = {
-          pseudo: response.data.user.name,
+          pseudo: response.data.user.name || response.data.user.pseudo,
           email: response.data.user.email
         };
         localStorage.setItem('token', this.token);
@@ -54,7 +53,7 @@ export const useAuthStore = defineStore('auth', {
       this.player = null;
       localStorage.removeItem('token');
       localStorage.removeItem('player');
-      delete api.defaults.headers.common['Authorization'];
+      // Pas besoin de delete le header ici, l'intercepteur s'en chargera car token sera null
     }
   },
 })

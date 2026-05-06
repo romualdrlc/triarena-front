@@ -1,6 +1,13 @@
 import { defineBoot } from '#q-app/wrappers'
-import axios from 'axios'
-import {useAuthStore} from "stores/auth";
+import axios, { AxiosInstance } from 'axios'
+import { useAuthStore } from "stores/auth";
+
+declare module '@vue/runtime-core' {
+  interface ComponentCustomProperties {
+    $axios: AxiosInstance;
+    $api: AxiosInstance;
+  }
+}
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -11,29 +18,32 @@ const api = axios.create({
   }
 });
 
-const token: string | null = localStorage.getItem('token');
-if (token) {
-  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-}
+export default defineBoot(({ app, router }) => {
 
-// "async" is optional;
-// more info on params: https://v2.quasar.dev/quasar-cli-vite/boot-files
-export default defineBoot(async ({ app, router }) => {
+  // --- INTERCEPTEUR DE REQUÊTE ---
+  // On injecte le token dynamiquement à CHAQUE appel
+  api.interceptors.request.use((config) => {
+    const authStore = useAuthStore();
+    if (authStore.token) {
+      config.headers.Authorization = `Bearer ${authStore.token}`;
+    }
+    return config;
+  }, (error) => {
+    return Promise.reject(error);
+  });
 
   // --- INTERCEPTEUR DE RÉPONSE ---
   api.interceptors.response.use(
-    (response) => response, // Si tout va bien, on renvoie la réponse
+    (response) => response,
     async (error) => {
-      // Si on reçoit une erreur 401 (Non autorisé / Expire)
-      console.log('titi', error.response);;
+      // Si 401, le token est expiré ou invalide
       if (error.response && error.response.status === 401) {
         const authStore = useAuthStore();
 
-        // On nettoie le store et le localStorage (méthode qu'on a créée ensemble)
+        // On nettoie tout
         authStore.logout();
 
-        // Redirection vers le login
-        // On évite de rediriger si on y est déjà pour éviter les boucles
+        // Redirection forcée vers login si on n'y est pas
         if (router.currentRoute.value.path !== '/login') {
           await router.push('/login');
         }
@@ -46,4 +56,4 @@ export default defineBoot(async ({ app, router }) => {
   app.config.globalProperties.$api = api;
 });
 
-export { axios, api }
+export { api }
