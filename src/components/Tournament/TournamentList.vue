@@ -1,10 +1,11 @@
 <template>
-  <div class="q-pa-md row q-col-gutter-lg justify-around">
+  <div class="q-pa-md row q-col-lg justify-around">
     <TournamentCard
         v-for="tournament in tournamentList"
         :key="tournament.name"
         :tournament="tournament"
         class="tournament col-12 col-md-4"
+        style="max-width: 400px;"
       />
     </div>
 </template>
@@ -24,7 +25,5 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.tournament {
-  max-width: 400px;
-}
+
 </style>

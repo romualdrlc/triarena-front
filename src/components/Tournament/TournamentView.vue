@@ -54,7 +54,6 @@ const apiServer = new ApiServer();
 const tournament = ref<Tournament | null>(null);
 
 onMounted(async () => {
-  console.log(route.params);
   const tournamentSlug = route.params.slug as string;
   tournament.value = await apiServer.getTournamentBySlug(tournamentSlug);
 });
