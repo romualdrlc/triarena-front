@@ -8,6 +8,7 @@ const routes: RouteRecordRaw[] = [
       { path: '', name: 'home', component: () => import('pages/TournamentPage.vue'), meta: { requiresAuth: true } },
       { path: 'login', name: 'login', component: () => import('pages/LoginPage.vue') },
       { path: 'register', name: 'register', component: () => import('pages/RegisterPage.vue') },
+      { path: 'team', name: 'team', component: () => import('pages/TeamPage.vue') },
       { path: 'tournament/:slug', name: 'tournament-view', component: () => import('components/Tournament/TournamentView.vue'),
       }
     ],

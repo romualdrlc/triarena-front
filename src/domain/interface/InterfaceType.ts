@@ -11,3 +11,9 @@ export interface TournamentRaw {
   teamList: string[];
   gameList: string[];
 }
+
+export interface PlayerRaw {
+  pseudo: string;
+  email: string;
+  roles: string[];
+}

@@ -1,7 +1,7 @@
 import {AxiosResponse} from "axios";
 import {api} from "boot/axios";
 import Tournament from "src/domain/entity/Tournament";
-import {TournamentCardRaw, TournamentRaw} from "src/domain/interface/InterfaceType";
+import {PlayerRaw, TournamentCardRaw, TournamentRaw} from "src/domain/interface/InterfaceType";
 
 export default class ApiServer {
 
@@ -25,6 +25,20 @@ export default class ApiServer {
   public async getTournamentBySlug(slug: string): Promise<Tournament> {
     const result = await this.get<TournamentRaw>(`/tournament/${slug}`);
     return new Tournament(result.name, result.slug, result.status, result.teamList, result.gameList);
+  }
+
+  public async getPlayerList(): Promise<PlayerRaw[]> {
+    const result = await this.get<[{pseudo: string; email: string; roles: string[]}]>('/players');
+    return result.map((player: PlayerRaw) => ({
+      pseudo: player.name,
+      email: player.email,
+      roles: player.roles
+    }));
+  }
+
+  public async registerTeamWithTournamentSlugAndPlayer(slug: string, playerOne: string, playerTwo: string): Promise<void> {
+    console.log(`Enregistrement de l'équipe pour le tournoi ${slug} avec les joueurs ${playerOne} et ${playerTwo}`);
+    await this.post(`/tournament/${slug}/team`, { playerOne, playerTwo });
   }
 
   // --- WRAPPERS AXIOS (PRIVÉS) ---
