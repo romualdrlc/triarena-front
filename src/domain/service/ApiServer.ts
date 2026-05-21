@@ -28,7 +28,10 @@ export default class ApiServer {
   }
 
   public async getPlayerList(): Promise<PlayerRaw[]> {
-    const result = await this.get<[{pseudo: string; email: string; roles: string[]}]>('/players');
+    const result = await this.get<{pseudo: string; email: string; roles: string[]}[]>('/players');
+    if (result.length === 0) {
+      return [];
+    }
     return result.map((player: PlayerRaw) => ({
       pseudo: player.name,
       email: player.email,
@@ -36,9 +39,8 @@ export default class ApiServer {
     }));
   }
 
-  public async registerTeamWithTournamentSlugAndPlayer(slug: string, playerOne: string, playerTwo: string): Promise<void> {
-    console.log(`Enregistrement de l'équipe pour le tournoi ${slug} avec les joueurs ${playerOne} et ${playerTwo}`);
-    await this.post(`/tournament/${slug}/team`, { playerOne, playerTwo });
+  public async registerTeamWithTournamentSlugAndPlayer(slug: string, playerOneMail: string, playerTwoMail: string): Promise<{'isTeamCreated': boolean}> {
+    return await this.post<{'isTeamCreated': boolean}>(`/tournament/${slug}/team`, { playerOneMail, playerTwoMail });
   }
 
   // --- WRAPPERS AXIOS (PRIVÉS) ---

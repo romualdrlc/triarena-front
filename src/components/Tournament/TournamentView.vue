@@ -22,6 +22,7 @@
                     color="primary"
                     class="q-pa-md cursor-pointer player-badge"
                     :data-pseudo="element.pseudo"
+                    :data-email="element.email"
                   >
                     {{ element.pseudo }}
                   </q-badge>
@@ -92,8 +93,10 @@ const tournamentSlug = route.params.slug as string;
 
 onMounted(async () => {
   tournament.value = await apiServer.getTournamentBySlug(tournamentSlug);
-  playerList.value = await apiServer.getPlayerList();
+  await getPlayerList();
 });
+
+const getPlayerList = async () => playerList.value = await apiServer.getPlayerList();
 
 const onDragEnd = (evt) => {
   const mouseEvent = evt.originalEvent;
@@ -104,18 +107,23 @@ const onDragEnd = (evt) => {
 
   const targetBadge = elementAtPoint?.closest('.player-badge');
   if (targetBadge) {
-    const sourcePseudo = evt.item.innerText.trim();
-    const targetPseudo = targetBadge.getAttribute('data-pseudo');
+    const sourcePlayer = evt.item._underlying_vm_;
+    const sourceEmail = sourcePlayer?.email;
+    const sourcePseudo = sourcePlayer?.pseudo;
 
-    if (targetPseudo && (sourcePseudo !== targetPseudo)) {
-      triggerTeamNotification(sourcePseudo, targetPseudo);
+    const targetPseudo = targetBadge.getAttribute('data-pseudo');
+    const targetPlayer = playerList.value.find(p => p.pseudo === targetPseudo);
+    const targetEmail = targetPlayer?.email;
+
+    if (targetPseudo && targetEmail && (sourcePseudo !== targetPseudo)) {
+      triggerTeamNotification(sourcePseudo, targetPseudo, sourceEmail, targetEmail);
     }
   }
 };
 
-const triggerTeamNotification = (p1: string, p2: string) => {
+const triggerTeamNotification = (sourcePseudo: string, targetPseudo: string, sourceEmail: string, targetEmail: string) => {
   $q.notify({
-    message: `Créer une équipe avec ${p1} et ${p2} ?`,
+    message: `Créer une équipe avec ${sourcePseudo} et ${targetPseudo} ?`,
     color: 'primary',
     icon: 'group_add',
     position: 'center',
@@ -125,7 +133,7 @@ const triggerTeamNotification = (p1: string, p2: string) => {
         label: 'Confirmer',
         color: 'yellow',
         handler: () => {
-          registerTeam(p1, p2);
+          registerTeam(sourceEmail, targetEmail);
         }
       },
       { label: 'Annuler', color: 'white' }
@@ -133,12 +141,19 @@ const triggerTeamNotification = (p1: string, p2: string) => {
   });
 };
 
-const registerTeam = async (p1: string, p2: string) => {
-  playerList.value = playerList.value.filter(p =>
-    p.pseudo !== p1 && p.pseudo !== p2
-  );
-  await apiServer.registerTeamWithTournamentSlugAndPlayer(tournamentSlug, p1, p2);
-};
+const registerTeam = async (p1Email: string, p2Email: string) => {
+  const result = await apiServer.registerTeamWithTournamentSlugAndPlayer(tournamentSlug, p1Email, p2Email);
+  console.log(result);
+  if (result.isTeamCreated) {
+    $q.notify({
+      message: 'Équipe créée avec succès !',
+      color: 'green',
+      icon: 'check',
+      position: 'center',
+    });
+    await getPlayerList();
+  }
+}
 </script>
 
 <style scoped>
