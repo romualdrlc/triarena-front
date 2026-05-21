@@ -36,7 +36,11 @@
           <q-card bordered flat>
             <q-card-section class="text-h6">Équipes</q-card-section>
             <q-separator />
-            <q-card-section>{{ tournament.getTeamList() }}</q-card-section>
+            <q-card-section class="column items-center q-gutter-y-sm">
+              <q-badge color="red" v-for="team in teamList" :key="team.name" class="q-mb-sm">
+                <div>Nom de l'equipe : {{ team.name }}</div>
+              </q-badge>
+            </q-card-section>
           </q-card>
         </div>
 
@@ -75,7 +79,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import ApiServer from "src/domain/service/ApiServer";
 import Tournament from "src/domain/entity/Tournament";
-import {PlayerRaw} from "src/domain/interface/InterfaceType";
+import {PlayerRaw, TeamList} from "src/domain/interface/InterfaceType";
 import draggable from 'vuedraggable';
 import {useQuasar} from "quasar";
 
@@ -90,10 +94,12 @@ const playerList = ref<PlayerRaw[]>([{
   roles: [''],
 }]);
 const tournamentSlug = route.params.slug as string;
+const teamList = ref<TeamList[]>([]);
 
 onMounted(async () => {
   tournament.value = await apiServer.getTournamentBySlug(tournamentSlug);
   await getPlayerList();
+  // a voir pour initialisé la aussi la teamList.
 });
 
 const getPlayerList = async () => playerList.value = await apiServer.getPlayerList();
@@ -143,7 +149,6 @@ const triggerTeamNotification = (sourcePseudo: string, targetPseudo: string, sou
 
 const registerTeam = async (p1Email: string, p2Email: string) => {
   const result = await apiServer.registerTeamWithTournamentSlugAndPlayer(tournamentSlug, p1Email, p2Email);
-  console.log(result);
   if (result.isTeamCreated) {
     $q.notify({
       message: 'Équipe créée avec succès !',
@@ -152,6 +157,14 @@ const registerTeam = async (p1Email: string, p2Email: string) => {
       position: 'center',
     });
     await getPlayerList();
+    teamList.value = [];
+    for (const team of result.teamList) {
+      teamList.value.push({
+        name: team.name,
+        player1: team.player1,
+        player2: team.player2,
+      });
+    }
   }
 }
 </script>
